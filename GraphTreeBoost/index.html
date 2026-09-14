@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GraphTreeBoost is a gradient-boosted graph learning framework combining soft decision trees with spectral feature aggregation using Chebyshev and heat-kernel methods.">
+  <meta name="author" content="László Fetter, András Gézsi">
+  <meta name="citation_title" content="GraphTreeBoost: Soft Decision Tree-Based Graph Learning With Spectral Aggregation">
+  <meta name="citation_author" content="Fetter, László">
+  <meta name="citation_author" content="Gézsi, András">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_doi" content="10.14428/esann/2026.ES2026-111">
+  <meta name="google-site-verification" content="e-_opINl_w4I-_Sb0FxlZmRvVW5EVeo9Vb-TaNm99UM" />
+  <title>GraphTreeBoost | Soft Decision Tree-Based Graph Learning</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #172033;
+      --muted: #5d6879;
+      --border: #dfe4ec;
+      --surface: #f6f8fb;
+      --accent: #2457d6;
+      --accent-dark: #1742ad;
+      --code: #111827;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            sans-serif;
+    }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+    main { max-width: 920px; margin: 0 auto; padding: 64px 24px 80px; }
+    header { padding-bottom: 16px; }
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2.25rem, 6vw, 4rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+    h2 {
+      margin: 52px 0 14px;
+      font-size: 1.45rem;
+      line-height: 1.25;
+    }
+    p { max-width: 820px; }
+    .subtitle {
+      margin: 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 1.2rem;
+    }
+    .authors { margin: 20px 0 0; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 28px 0 10px;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--fg);
+      text-decoration: none;
+      font-weight: 650;
+    }
+    .button:hover {
+      border-color: var(--accent);
+      color: var(--accent-dark);
+    }
+    .button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .button.primary:hover {
+      background: var(--accent-dark);
+      color: #fff;
+    }
+    .card {
+      margin-top: 18px;
+      padding: 22px 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th { background: var(--surface); }
+    tr:last-child td { border-bottom: 0; }
+    pre {
+      overflow-x: auto;
+      margin: 18px 0 0;
+      padding: 18px;
+      border-radius: 10px;
+      background: var(--code);
+      color: #f3f4f6;
+      font: 0.88rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .small { color: var(--muted); font-size: 0.94rem; }
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h1>GraphTreeBoost</h1>
+    <p class="subtitle">
+      <strong>Soft Decision Tree-Based Graph Learning With Spectral Aggregation</strong>
+    </p>
+
+    <p class="authors">
+      <strong>László Fetter</strong> and <strong>András Gézsi</strong><br>
+      Department of Artificial Intelligence and Systems Engineering<br>
+      Budapest University of Technology and Economics
+    </p>
+
+    <nav class="buttons" aria-label="Project links">
+      <a class="button primary"
+         href="https://github.com/laszlo-fetter/graphtreeboost">
+        GitHub Repository
+      </a>
+      <a class="button"
+         href="https://doi.org/10.14428/esann/2026.ES2026-111">
+        Paper / DOI
+      </a>
+      <a class="button"
+         href="https://www.esann.org/sites/default/files/proceedings/2026/ES2026-111.pdf">
+        PDF
+      </a>
+      <a class="button"
+         href="https://dblp.org/rec/conf/esann/FetterG26">
+        DBLP
+      </a>
+    </nav>
+  </header>
+
+  <section>
+    <h2>Abstract</h2>
+    <p>
+      GraphTreeBoost is a gradient-boosted framework for graph-structured data
+      that couples soft decision trees with spectral feature aggregation.
+      Each split operates on features filtered by truncated Chebyshev or
+      Chebyshev–Bessel (heat-kernel) expansions of the normalized adjacency,
+      enabling graph-aware learning without eigendecomposition.
+    </p>
+    <p>
+      Training combines analytic second-order leaf updates with AdamW for
+      routing and filter parameters. Spectral operations are implemented in
+      feature space using sparse graph primitives, making the approach practical
+      on CPU hardware while retaining interpretable thresholds and per-node
+      gain scores.
+    </p>
+  </section>
+
+  <section>
+    <h2>Method</h2>
+    <p>
+      GraphTreeBoost is a node-classification method that combines gradient-boosted
+      soft decision trees with graph-based feature aggregation. It uses Chebyshev
+      and heat-kernel filters to incorporate information from neighboring
+      nodes before the tree model makes its decisions. The graph filtering
+      is implemented without explicitly computing the graph's eigenvectors.
+    </p>
+    <div class="card">
+      <strong>Why this combination?</strong>
+      <p>
+        Tree-based models are among the strongest and most widely used approaches
+	for tabular data. Graph-structured datasets, however, contain additional
+	information in the relationships between samples that standard tabular
+	models cannot directly use.
+      </p>
+      <p>
+	GraphTreeBoost combines tree-based learning with graph-based feature
+	aggregation. The graph is used to enrich the node features with information
+	from neighboring nodes, and gradient-boosted soft decision trees are then
+	trained on these features. This allows tree-based models to take advantage
+	of both the original node features and the structure of the graph.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Experimental results</h2>
+    <p>
+      The paper evaluates three variants on six benchmark datasets:
+      feature-only, GraphTreeBoost with Chebyshev filtering (GTB-Cheby),
+      and GraphTreeBoost with heat-kernel filtering (GTB-Heat).
+      Reported values are test accuracy (%) averaged over ten runs.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Cora</th>
+            <th>Citeseer</th>
+            <th>Texas</th>
+            <th>Cornell</th>
+            <th>Actor</th>
+            <th>Chameleon</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GCN</td>
+            <td>87.12 ± 1.38</td>
+            <td>76.50 ± 1.61</td>
+            <td>63.81 ± 5.27</td>
+            <td>59.35 ± 4.19</td>
+            <td>30.31 ± 0.98</td>
+            <td>67.96 ± 1.82</td>
+          </tr>
+          <tr>
+            <td>No aggregation</td>
+            <td>52.79 ± 0.96</td>
+            <td>53.56 ± 1.59</td>
+            <td>71.08 ± 2.56</td>
+            <td>57.30 ± 3.78</td>
+            <td>33.53 ± 1.06</td>
+            <td>38.55 ± 2.13</td>
+          </tr>
+          <tr>
+            <td>GTB-Cheby</td>
+            <td>74.09 ± 2.73</td>
+            <td>56.77 ± 1.22</td>
+            <td>72.43 ± 2.79</td>
+            <td>66.75 ± 4.42</td>
+            <td>31.05 ± 1.10</td>
+            <td>71.75 ± 2.13</td>
+          </tr>
+          <tr>
+            <td>GTB-Heat</td>
+            <td>71.27 ± 2.46</td>
+            <td>57.18 ± 1.03</td>
+            <td>73.24 ± 3.24</td>
+            <td>72.97 ± 8.55</td>
+            <td>33.34 ± 0.47</td>
+            <td>50.83 ± 1.87</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">
+      The GCN values are taken from the evaluations reported in the paper.
+      See Table 1 of the paper for the complete comparison and methodology.
+    </p>
+  </section>
+
+  <section>
+    <h2>Code</h2>
+    <p>
+      The implementation is publicly available on GitHub under the MIT license.
+      The repository includes the GraphTreeBoost implementation and the code
+      used to run the benchmark experiments.
+    </p>
+    <p>
+      <a href="https://github.com/laszlo-fetter/graphtreeboost">
+        View GraphTreeBoost on GitHub →
+      </a>
+    </p>
+  </section>
+
+  <section>
+    <h2>Reproducing the experiments</h2>
+    <p>
+      The repository documents the required Python dependencies and provides
+      <code>main.py</code> for running the experiments. For example:
+    </p>
+    <pre><code>python main.py &lt;Dataset&gt;</code></pre>
+  </section>
+
+  <section>
+    <h2>Publication</h2>
+    <p>
+      <em>GraphTreeBoost: Soft Decision Tree-Based Graph Learning With Spectral
+      Aggregation</em> appears in the proceedings of the 34th European Symposium
+      on Artificial Neural Networks, Computational Intelligence and Machine
+      Learning (ESANN 2026), held 22–24 April 2026.
+    </p>
+    <p>
+      DOI:
+      <a href="https://doi.org/10.14428/esann/2026.ES2026-111">
+        10.14428/esann/2026.ES2026-111
+      </a>
+    </p>
+  </section>
+
+  <section>
+    <h2>Citation</h2>
+    <pre><code>@inproceedings{fetter2026graphtreeboost,
+  author    = {Fetter, László and Gézsi, András},
+  title     = {GraphTreeBoost: Soft Decision Tree-Based Graph Learning With Spectral Aggregation},
+  booktitle = {Proceedings of the 34th European Symposium on Artificial Neural Networks,
+               Computational Intelligence and Machine Learning (ESANN 2026)},
+  year      = {2026},
+  doi       = {10.14428/esann/2026.ES2026-111}
+}</code></pre>
+  </section>
+
+  <footer>
+    GraphTreeBoost · László Fetter and András Gézsi · ESANN 2026
+  </footer>
+</main>
+</body>
+</html>
